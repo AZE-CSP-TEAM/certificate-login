@@ -1,0 +1,21 @@
+﻿namespace Common.Enums.ErrorEnums
+{
+    public enum ErrorCodes : int
+    {
+        SUCCESS,
+        INTERNAL_ERROR,
+        UNAUTHORIZED,
+        INPUT_IS_NOT_VALID,
+        ACCESS_DENIED,
+        ORGANIZATION_DOES_NOT_EXIST,
+        ORIGIN_IS_EMPTY,
+        CLAIMS_ARE_EMPTY,
+        CUSTOMER_DOES_NOT_EXIST,
+        CUSTOMER_IS_BLOCKED,
+        ORGANIZATION_IS_BLOCKED,
+        SUB_ORGANIZATION_IS_BLOCKED,
+        CERTIFICATE_STATUS_IS_NOT_GOOD,
+        CHAIN_VALIDATION_STATUS_IS_NOT_GOOD,
+        LOGIN_CERTIFICATE_VERIFICATION_IS_NOT_GOOD
+    }
+}

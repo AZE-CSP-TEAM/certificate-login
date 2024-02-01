@@ -1,0 +1,11 @@
+﻿version: '3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4530:4530"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Authors>Farid Ismayilzada</Authors>
+    <Company>e-imza.az</Company>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle" Version="1.8.6.1">
+      <IncludeAssets></IncludeAssets>
+      <Aliases>BC</Aliases>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
