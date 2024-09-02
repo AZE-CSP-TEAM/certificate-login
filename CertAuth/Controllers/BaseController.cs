@@ -9,6 +9,7 @@ namespace CertAuth.Controllers
     [ApiController]
     public class BaseController : ControllerBase, IDisposable
     {
+        // implementation
         private readonly IService _service;
         public BaseController(IService service) => _service = service;
         public BaseController() { }
