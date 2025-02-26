@@ -7,7 +7,7 @@ using System;
 namespace CertAuth.Controllers
 {
     [ApiController]
-    public class BaseController : ControllerBase, IDisposable
+    public class BaseController : ControllerBase
     {
         // implementation
         private readonly IService _service;
@@ -15,9 +15,5 @@ namespace CertAuth.Controllers
         public BaseController() { }
         public CreateActionResult<TResult> Result<TResult>(ContainerResult<TResult> result)
             => new CreateActionResult<TResult>(result);
-
-        #region Disposable Members
-        public void Dispose() => _service?.Dispose();
-        #endregion
     }
 }
