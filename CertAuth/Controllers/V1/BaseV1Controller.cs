@@ -7,7 +7,7 @@ namespace CertAuth.Controllers.V1
     /// <summary>
     /// 
     /// </summary>
-    [Route("api/v1/[controller]")]
+
     [ApiController]
     public class BaseV1Controller : BaseController
     {

@@ -1,33 +1,22 @@
 {
-  "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "CertAuth": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:5001;http://localhost:5000"
-    },
-    "Docker": {
-      "commandName": "Docker",
-      "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
-      "publishAllPorts": true
+    "profiles": {
+        "CertAuth": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "applicationUrl": "http://localhost:4530;https://localhost:4531"
+        },
+        "Docker": {
+            "commandName": "Docker",
+            "launchBrowser": true,
+            "launchUrl": "http://localhost:4530",
+            "publishAllPorts": true,
+            "environmentVariables": {
+                "ASPNETCORE_URLS": "http://0.0.0.0:4530;https://0.0.0.0:4531",
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
     }
-  },
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:4530",
-      "sslPort": 0
-    }
-  }
 }

@@ -2,5 +2,5 @@
 
 namespace Services.Services
 {
-    public interface IService : IDisposable { }
+    public interface IService { }
 }

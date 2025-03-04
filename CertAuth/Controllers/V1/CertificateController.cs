@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 
 namespace CertAuth.Controllers
 {
-
+    [Route("api/v1/[controller]")]
+    [ApiController]
     public class CertificateController : BaseV1Controller
     {
         private readonly ICertificateValidationService _certificateValidationService;

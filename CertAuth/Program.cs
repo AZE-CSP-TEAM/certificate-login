@@ -37,13 +37,29 @@ namespace CertAuth
 
         public static void BuildConfiguration()
         {
+            var root = Directory.GetCurrentDirectory();
+
+            // Loading variables from .env
+            var dotenv = Path.Combine(root, ".env");
+            DotEnv.Load(dotenv);
+
+            // Checking whether the environment variables have loaded.
+            //Console.WriteLine($"CERTIFICATE (from env): {Environment.GetEnvironmentVariable("Kestrel__Certificates__SHA1Root__Certificate")}");
+            //Console.WriteLine($"CERTIFICATE_PASSWORD (from env): {Environment.GetEnvironmentVariable("Kestrel__Certificates__SHA1Root__Password")}");
+
             var builder = new ConfigurationBuilder()
-           //.SetBasePath(env.ContentRootPath)
+           .SetBasePath(root)
            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
            //.AddJsonFile($"appsettings.{}.json", optional: true)
            .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            // Checking whether the variables have been inserted in the appsettings
+            //Console.WriteLine($"CERTIFICATE (from config): {Configuration["Kestrel:Certificates:SHA1Root:Certificate"]}");
+            //Console.WriteLine($"CERTIFICATE_PASSWORD (from config): {Configuration["Kestrel:Certificates:SHA1Root:Password"]}");
+
+
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)

@@ -1,31 +1,33 @@
 ﻿using Common;
 using Common.Enums.CommonEnums;
-using Common.Enums.DatabaseEnums;
 using Common.Enums.ErrorEnums;
 using Common.Resources;
-using DataAccess.UnitofWork;
 using FrdCoreCrypt.Converters;
 using FrdCoreCrypt.Enums;
 using FrdCoreCrypt.Objects;
 using Microsoft.Extensions.Configuration;
 using Models;
-using Models.Dtos.RepositoriesDtos.CustomerRepositoryDtos;
 using Models.ServiceParameters.LoginParameters;
 using SecurityManager.Helpers;
 using SecurityManager.Models;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Services.Services.CertificateValidationServices
 {
-    public class CertificateValidationService : AbstractService, ICertificateValidationService
+    public class CertificateValidationService : ICertificateValidationService
     {
         private readonly IConfiguration _configuration;
         private readonly ITokenHelper _tokenHelper;
         private readonly ICertificateClaimConverter _certificateClaimConverter;
 
-        public CertificateValidationService(IUnitOfWork UoW, IConfiguration configuration, ITokenHelper tokenHelper,
-            ICertificateClaimConverter certificateClaimConverter) : base(UoW)
+
+
+        public CertificateValidationService(IConfiguration configuration, ITokenHelper tokenHelper,
+            ICertificateClaimConverter certificateClaimConverter)
         {
             _configuration = configuration;
             _tokenHelper = tokenHelper;
@@ -33,7 +35,6 @@ namespace Services.Services.CertificateValidationServices
         }
 
         public async Task<ContainerResult<string>> Login(CertificateLoginInput input)
-            => await ExecuteAsync(ConnectionTypes.CONNECTION, async () =>
         {
             ContainerResult<string> result = new ContainerResult<string>();
 
@@ -63,82 +64,49 @@ namespace Services.Services.CertificateValidationServices
                 return result;
             }
 
-            GetCustomerByUrlDto customerByUrl = await _uow.CustomerRepository().GetCustomerByUrl(input.Origin);
-
-            if (customerByUrl == null)
-            {
-                result.ErrorList.Add(new Error
-                {
-                    ErrorCode = ErrorCodes.CUSTOMER_DOES_NOT_EXIST,
-                    ErrorMessage = Resource.CUSTOMER_DOES_NOT_EXIST,
-                    StatusCode = ErrorHttpStatus.NOTFOUND
-                });
-
-                return result;
-            }
-
-            if (customerByUrl.OrganizationStatusId == (byte)OrganizationStatuses.BLOCKED)
-            {
-                result.ErrorList.Add(new Error
-                {
-                    ErrorCode = ErrorCodes.ORGANIZATION_IS_BLOCKED,
-                    ErrorMessage = Resource.ORGANIZATION_IS_BLOCKED,
-                    StatusCode = ErrorHttpStatus.NOTFOUND
-                });
-
-                return result;
-            }
-
-            if (customerByUrl.SubOrganizationStatusId == (byte)SubOrganizationStatuses.BLOCKED)
-            {
-                result.ErrorList.Add(new Error
-                {
-                    ErrorCode = ErrorCodes.SUB_ORGANIZATION_IS_BLOCKED,
-                    ErrorMessage = Resource.SUB_ORGANIZATION_IS_BLOCKED,
-                    StatusCode = ErrorHttpStatus.FORBIDDEN
-                });
-
-                return result;
-            }
-
-            if (customerByUrl.CustomerStatusId == (byte)CustomerStatuses.BLOCKED)
-            {
-                result.ErrorList.Add(new Error
-                {
-                    ErrorCode = ErrorCodes.CUSTOMER_IS_BLOCKED,
-                    ErrorMessage = Resource.CUSTOMER_IS_BLOCKED,
-                    StatusCode = ErrorHttpStatus.FORBIDDEN
-                });
-
-                return result;
-            }
-
             result.Output = _tokenHelper.GenerateToken(new TokenInput
             {
                 Issuer = _configuration.GetSection("AppSetting")["Issuer"],
                 Claims = input.Claims,
-                Customer = new Customer
-                {
-                    Audience = input.Origin,
-                    Minutes = customerByUrl.Minutues,
-                    Secret = customerByUrl.SecretKey,
-                    SecurityAlgorithm = customerByUrl.Algorithm
-                }
             });
 
-            await Task.CompletedTask;
-            return result;
-        });
+            return await Task.FromResult(result);
+        }
 
         public async Task<ContainerResult<ValidateCertificateOutput>> ValidateCertificate(ValidateCertificateInput input)
-           => await ExecuteAsync(ConnectionTypes.NONE, async () =>
         {
             ContainerResult<ValidateCertificateOutput> result = new ContainerResult<ValidateCertificateOutput>();
 
+            // Проверка на null
+            if (input?.LoginCertificate == null)
+            {
+                result.ErrorList.Add(new Error
+                {
+                    ErrorCode = ErrorCodes.INVALID_CERTIFICATE,
+                    ErrorMessage = "The login certificate is missing or invalid.",
+                    StatusCode = ErrorHttpStatus.FORBIDDEN
+                });
+                return result;
+            }
+
             CertificateClaimConverterModel certificateClaimConverterModel = _certificateClaimConverter
-            .GetClaimsFromCertificate(input.LoginCertificate);
+                .GetClaimsFromCertificate(input.LoginCertificate);
+
+            // Проверка на null для результата конвертации
+            if (certificateClaimConverterModel == null || certificateClaimConverterModel.CertificateStatus == null || certificateClaimConverterModel.ChainValidationStatus == null)
+            {
+                result.ErrorList.Add(new Error
+                {
+                    ErrorCode = ErrorCodes.INVALID_CERTIFICATE,
+                    ErrorMessage = "The certificate validation returned invalid data.",
+                    StatusCode = ErrorHttpStatus.FORBIDDEN
+                });
+
+                return result;
+            }
 
             Console.WriteLine($"CertificateClaims : {certificateClaimConverterModel.ChainValidationStatus}");
+
             if (certificateClaimConverterModel.CertificateStatus.Status != CertificateStatusEnum.Good)
             {
                 result.ErrorList.Add(new Error
@@ -180,8 +148,7 @@ namespace Services.Services.CertificateValidationServices
                 CertificateClaims = certificateClaimConverterModel.Claims
             };
 
-            await Task.CompletedTask;
-            return result;
-        });
+            return await Task.FromResult(result);
+        }
     }
 }
