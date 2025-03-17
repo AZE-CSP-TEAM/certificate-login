@@ -1,44 +1,34 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using SecurityManager.Models;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
-using System.Xml.Schema;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SecurityManager.Helpers
 {
     public class TokenHelper : ITokenHelper
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _secret;
+        private readonly RSA _privateKey;
         private readonly string _securityAlgorithm;
 
-        public TokenHelper(IConfiguration configuration)
+        public TokenHelper(RsaKeyProvider rsaKeyProvider)
         {
-            _configuration = configuration;
-
-            var secval = Environment.GetEnvironmentVariable("Token__Secret");
-            _secret = Environment.GetEnvironmentVariable("Token__Secret")?.Trim().Trim('"');
-            _securityAlgorithm = Environment.GetEnvironmentVariable("Token__SecurityAlgorithm")?.Trim();
+            _privateKey = rsaKeyProvider.GetPrivateKey();
+            _securityAlgorithm = SecurityAlgorithms.RsaSha256;
         }
-
-        public string GenerateSecureSecret() => Convert.ToBase64String(new HMACSHA256().Key);
 
         public string GenerateToken(TokenInput input)
         {
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();            
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            var signingCredentials = new SigningCredentials(new RsaSecurityKey(_privateKey), _securityAlgorithm);
 
             return tokenHandler.WriteToken(tokenHandler.CreateToken(new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(input.Claims),
                 Issuer = input.Issuer,
                 Expires = DateTime.UtcNow.AddMinutes(5),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret)),
-                _securityAlgorithm),
+                SigningCredentials = signingCredentials,
                 IssuedAt = DateTime.UtcNow
             }));
         }

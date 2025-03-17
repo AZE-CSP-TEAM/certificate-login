@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using CertAuth.Installers;
 using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Models;
 using Models.ServiceParameters.LoginParameters;
+using SecurityManager.Helpers;
 using Services.Services.CertificateValidationServices;
 
 namespace CertAuth
@@ -24,6 +27,11 @@ namespace CertAuth
         {
             //   app.UseHttpsRedirection();
 
+            // Adding the RsaKeyProvider as a Singleton (so that one key is used everywhere)
+            services.AddSingleton<RsaKeyProvider>();
+
+            // Adding TokenHelper as a Transient (a new object each time)
+            services.AddTransient<ITokenHelper, TokenHelper>();
             services.AddHsts(options =>
             {
                 options.Preload = true;

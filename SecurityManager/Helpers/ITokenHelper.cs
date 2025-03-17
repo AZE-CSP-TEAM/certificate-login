@@ -4,7 +4,7 @@ namespace SecurityManager.Helpers
 {
     public interface ITokenHelper
     {
-        string GenerateSecureSecret();
+       // string GenerateSecureSecret();
         string GenerateToken(TokenInput input);
     }
 }
